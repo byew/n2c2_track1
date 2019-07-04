@@ -66,20 +66,21 @@ class DataProcessor(object):
 class N2c2ClsProcessor(DataProcessor):
     def __init__(self, fold_id: int):
         self.fold_id = fold_id
+        self.file_name = "train/clinicalSTS2019.train.V2.master.single_sent.xlsx"
 
     def get_train_examples(self, data_dir):
         """Gets a collection of `InputExample`s for the train set."""
-        file_path = os.path.join(data_dir, "train/clinicalSTS2019.train.V2.master.dataOnly.xlsx.cls_pairs.xlsx")
+        file_path = os.path.join(data_dir, self.file_name)
         return self._create_examples(file_path, train=True)
 
     def get_dev_examples(self, data_dir):
         """Gets a collection of `InputExample`s for the dev set."""
-        file_path = os.path.join(data_dir, "train/clinicalSTS2019.train.V2.master.dataOnly.xlsx.cls_pairs.xlsx")
+        file_path = os.path.join(data_dir, self.file_name)
         return self._create_examples(file_path, train=False)
 
     def get_test_examples(self, data_dir):
         """Gets a collection of `InputExample`s for the test set."""
-        file_path = os.path.join(data_dir, "train/clinicalSTS2019.train.V2.master.dataOnly.xlsx.cls_pairs.xlsx")
+        file_path = os.path.join(data_dir, self.file_name)
         return self._create_examples(file_path, train=False)
 
     def get_labels(self):
@@ -93,7 +94,7 @@ class N2c2ClsProcessor(DataProcessor):
             data = data[data.partition != self.fold_id]
         else:
             data = data[data.partition == self.fold_id]
-        examples = [InputExample(guid=row.ID, text_a=row.sent, label=row.cat)
+        examples = [InputExample(guid=row.ID, text_a=row.sent, label=row.label)
                     for row in data.itertuples()]
 
         return examples

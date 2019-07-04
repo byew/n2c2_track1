@@ -53,7 +53,7 @@ def parse_args():
                         type=int,
                         help="Total batch size for training.")
     parser.add_argument("--eval_batch_size",
-                        default=8,
+                        default=32,
                         type=int,
                         help="Total batch size for eval.")
     parser.add_argument("--learning_rate",
@@ -73,13 +73,15 @@ def parse_args():
                         type=int,
                         default=42,
                         help="random seed for initialization")
-    parser.add_argument('--loss_scale',
-                        type=float, default=0,
-                        help="Loss scaling to improve fp16 numeric stability. Only used when fp16 set to True.\n"
-                             "0 (default value): dynamic loss scaling.\n"
-                             "Positive power of 2: static loss scaling value.\n")
+    # parser.add_argument('--loss_scale',
+    #                     type=float, default=0,
+    #                     help="Loss scaling to improve fp16 numeric stability. Only used when fp16 set to True.\n"
+    #                          "0 (default value): dynamic loss scaling.\n"
+    #                          "Positive power of 2: static loss scaling value.\n")
     parser.add_argument('--model_loc', type=str, default='',
                         help="Specify the location of the bio or clinical bert model")
+    parser.add_argument('--device', type=str, default='cuda:0')
+
 
     parser.add_argument('--fold_id', type=int, required=True)
     return parser.parse_args()

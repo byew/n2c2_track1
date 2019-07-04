@@ -1,7 +1,8 @@
 ipdb
 pandas
-apex
-ptvsd
+xlrd
 numpy
 tqdm
 torch
+pytorch-pretrained-bert
+openpyxl

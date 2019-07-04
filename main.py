@@ -5,7 +5,6 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
-from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm, trange
 import ipdb
 
@@ -34,7 +33,7 @@ def main():
 
     print(f"Using bert model: {args.bert_model}")
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(args.device if torch.cuda.is_available() else "cpu")
     n_gpu = torch.cuda.device_count()
     logger.info(f"device: {device} n_gpu: {n_gpu}")
 
@@ -173,11 +172,12 @@ def main():
             with torch.no_grad():
                 tmp_eval_loss = model(input_ids, segment_ids, input_mask, label_ids)
                 logits = model(input_ids, segment_ids, input_mask)
+                logits = torch.softmax(logits, 1)
 
             logits = logits.detach().cpu().numpy()
             label_ids = label_ids.to('cpu').numpy()
             tmp_eval_accuracy = accuracy(logits, label_ids)
-            pred += logits.argmax(1).tolist()
+            pred += logits.tolist()
 
             eval_loss += tmp_eval_loss.mean().item()
             eval_accuracy += tmp_eval_accuracy
@@ -194,8 +194,7 @@ def main():
         result = {'eval_loss': eval_loss,
                   'eval_accuracy': eval_accuracy,
                   'global_step': global_step,
-                  'loss': loss,
-                  'pred': pred}
+                  'loss': loss}
 
         output_eval_file = os.path.join(args.output_dir, "eval_results.txt")
         with open(output_eval_file, "w") as writer:
@@ -203,6 +202,12 @@ def main():
             for key in sorted(result.keys()):
                 logger.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
+
+        output_pred_file = os.path.join(args.output_dir, "pred_results.txt")
+        with open(output_pred_file, 'w') as writer:
+            logger.info("***** Writing Eval predictions *****")
+            for id, p in pred.items():
+                writer.write(f"{id}:{p}\n")
 
     if args.do_test and (args.local_rank == -1 or torch.distributed.get_rank() == 0):
         test_examples = processor.get_test_examples(args.data_dir)
